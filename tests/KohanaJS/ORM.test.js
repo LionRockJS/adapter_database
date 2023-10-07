@@ -1,28 +1,29 @@
-const { EQUAL } = require('@kohanajs/constants').SQL;
-const { KohanaJS, ORM, DatabaseDriver } = require('kohanajs');
+import url from "node:url";
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 
-KohanaJS.init(`${__dirname}/test18`);
-DatabaseDriver.defaultDriver = require('../../classes/databaseDriver/BetterSQLite3');
-ORM.defaultAdapter = require('../../classes/ORMAdapter/SQLite');
+import {Central, ORM} from '@lionrockjs/central';
+import Database from 'better-sqlite3';
+import path from 'node:path';
+import fs from "node:fs";
+import ORMAdapterSQLite from "../../classes/adapter/orm/SQLite";
 
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
+const EQUAL = "EQUAL";
+ORM.defaultAdapter = ORMAdapterSQLite;
 
 describe('orm test', () => {
-  beforeEach(() => {
-    KohanaJS.init({
+  beforeEach(async () => {
+    await Central.init({
       EXE_PATH: __dirname,
       APP_PATH: `${__dirname}/orm/application`,
       MOD_PATH: `${__dirname}/test1/modules`,
     });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
   });
 
-  test('orm', () => {
-    const KOJSORM = KohanaJS.require('ORM');
+  test('orm', async() => {
+    const KOJSORM = await Central.import('ORM');
     expect(KOJSORM).toBe(ORM);
 
     const obj = new ORM();
@@ -33,8 +34,8 @@ describe('orm test', () => {
     // ORM is abstract class, should not found lowercase and tableName
   });
 
-  test('extends ORM', () => {
-    const TestModel = require('./orm/application/classes/TestModel');
+  test('extends ORM', async () => {
+    const TestModel = await import('./orm/application/classes/TestModel').default;
     // eslint-disable-next-line no-new
     new TestModel();
 

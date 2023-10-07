@@ -1,7 +1,5 @@
-const {ORM} = require('kohanajs');
+import {ORM} from '@lionrockjs/central';
 
-class TestModel extends ORM{
+export default class TestModel extends ORM{
   static tableName = "testmodels";
 }
-
-module.exports = TestModel;

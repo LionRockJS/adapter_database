@@ -1,20 +1,38 @@
+import url from "node:url";
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
+
 const {
   AND, EQUAL, NOT_EQUAL, OR, TRUE, FALSE, START_GROUP, END_GROUP,
-} = require('@kohanajs/constants').SQL;
+} = {
+  EQUAL: 'EQUAL',
+  GREATER_THAN: 'GREATER_THAN',
+  LESS_THAN: 'LESS_THAN',
+  GREATER_THAN_EQUAL: 'GREATER_THAN_EQUAL',
+  LESS_THAN_EQUAL: 'LESS_THAN_EQUAL',
+  NOT_EQUAL: 'NOT_EQUAL',
+  BETWEEN: 'BETWEEN',
+  LIKE: 'LIKE',
+  IN: 'IN',
+  AND: 'AND',
+  OR: 'OR',
+  TRUE: 'TRUE',
+  FALSE: 'FALSE',
+  BLANK: 'BLANK',
+  START_GROUP: 'START_GROUP',
+  END_GROUP: 'END_GROUP',
+};
 
-const { KohanaJS, ORM } = require('kohanajs');
+import { Central, ORM } from '@lionrockjs/central';
+import SQLiteAdapter from '../../classes/adapter/orm/SQLite.mjs';
+import path from 'node:path';
+import fs from 'node:fs';
+import Database from 'better-sqlite3';
 
-KohanaJS.init({
+Central.init({
   EXE_PATH: `${__dirname}/test18`,
-});
+}).then();
 
-const SQLiteAdapter = require('../../classes/ORMAdapter/SQLite');
 ORM.defaultAdapter = SQLiteAdapter;
-
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
-
 const Person = ORM.require('Person');
 
 describe('orm test', () => {

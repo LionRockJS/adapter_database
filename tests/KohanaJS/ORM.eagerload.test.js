@@ -1,8 +1,13 @@
-const { KohanaJS, ORM, DatabaseDriver } = require('kohanajs');
+import url from "node:url";
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
+import { Central, ORM, ControllerMixinDatabase } from '@lionrockjs/central';
+import DatabaseAdapterBetterSqlite3 from '../../classes/adapter/database/BetterSQLite3.mjs';
+import ORMAdapterSQLite from '../../classes/adapter/orm/SQLite.mjs';
 
-KohanaJS.init(`${__dirname}/test18`);
-DatabaseDriver.defaultDriver = require('../../classes/databaseDriver/BetterSQLite3');
-ORM.defaultAdapter = require('../../classes/ORMAdapter/SQLite');
+Central.init(`${__dirname}/test18`).then();
+
+ControllerMixinDatabase.defaultAdapter = DatabaseAdapterBetterSqlite3;
+ORM.defaultAdapter = ORMAdapterSQLite;
 
 const Database = require('better-sqlite3');
 

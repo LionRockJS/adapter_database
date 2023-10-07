@@ -1,6 +1,6 @@
-const { ORMAdapter } = require('kohanajs');
+import { ORMAdapter } from '@lionrockjs/central';
 
-class ORMAdapterSQLite extends ORMAdapter {
+export default class ORMAdapterSQLite extends ORMAdapter {
   static OP = ({
     ...ORMAdapter.OP,
     NOT_EQUAL: '!=',
@@ -250,5 +250,3 @@ class ORMAdapterSQLite extends ORMAdapter {
     )
   }
 }
-
-module.exports = ORMAdapterSQLite;

@@ -1,13 +1,16 @@
-const DatabaseDriver = require('../classes/databaseDriver/BetterSQLite3');
+import url from "node:url";
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
+
+import DatabaseAdapter from '../classes/adapter/database/BetterSQLite3.mjs';
 
 describe('database driver ', () => {
   test('create db', async () => {
-    const db = await DatabaseDriver.create(`${__dirname}/db/empty.sqlite`);
+    const db = await DatabaseAdapter.create(`${__dirname}/db/empty.sqlite`);
     expect(db.database.open).toBe(true);
   });
 
   test('create table', async () => {
-    const db = await DatabaseDriver.create(':memory:');
+    const db = await DatabaseAdapter.create(':memory:');
     await db.exec('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT);');
     await db.prepare('INSERT INTO test (id, name) VALUES (?, ?);').run(1, 'Foo');
     const result = await db.prepare('SELECT * FROM test WHERE id = 1;').get();
@@ -23,7 +26,7 @@ describe('database driver ', () => {
   });
 
   test('transaction', async () => {
-    const db = await DatabaseDriver.create(':memory:');
+    const db = await DatabaseAdapter.create(':memory:');
     await db.exec('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT);');
     await db.transactionStart();
     await db.prepare('INSERT INTO test (id, name) VALUES (?, ?);').run(1, 'Foo');
@@ -43,7 +46,7 @@ describe('database driver ', () => {
   });
 
   test('checkpoint', async () => {
-    const db = await DatabaseDriver.create(':memory:');
+    const db = await DatabaseAdapter.create(':memory:');
     await db.exec('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT);');
     const result = await db.checkpoint();
     expect(result).toBe(undefined);
