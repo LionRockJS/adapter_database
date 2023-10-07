@@ -1,6 +1,6 @@
-const ORM = require('../../../../../../classes/ORM');
+import {ORM} from '@lionrockjs/central';
 
-class Person extends ORM{
+export default class Person extends ORM{
   constructor(id, options) {
     super(id, options);
 
@@ -28,7 +28,3 @@ Person.hasMany   = [
 
 Person.belongsToMany = [
 ];
-
-
-module.exports = Person;
-``

@@ -1,6 +1,6 @@
-const {ORM} = require('kohanajs');
+import {ORM} from '@lionrockjs/central';
 
-class Address extends ORM{
+export default class Address extends ORM{
   person_id = null;
   address1 = null;
   address2 = null;
@@ -42,5 +42,3 @@ class Address extends ORM{
     ['billing_address_id', 'Checkout']
   ];
 }
-
-module.exports = Address;

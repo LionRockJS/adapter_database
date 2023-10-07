@@ -1,6 +1,6 @@
-const {ORM} = require('kohanajs');
+import {ORM} from '@lionrockjs/central';
 
-class Product extends ORM{
+export default class Product extends ORM{
   //foreignKeys
   default_image_id = null;
   type_id = null;
@@ -42,6 +42,3 @@ class Product extends ORM{
     'Tag',
   ]);
 }
-
-
-module.exports = Product;

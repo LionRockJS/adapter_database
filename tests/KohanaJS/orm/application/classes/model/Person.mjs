@@ -1,5 +1,6 @@
-const {ORM} = require('kohanajs');
-class Person extends ORM{
+import {ORM} from '@lionrockjs/central';
+
+export default class Person extends ORM{
   first_name;
   last_name;
   phone;
@@ -21,5 +22,3 @@ class Person extends ORM{
     ['person_id', 'Customer'],
   ];
 }
-
-module.exports = Person;

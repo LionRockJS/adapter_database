@@ -1,6 +1,6 @@
-const {ORM} = require('kohanajs');
+import {ORM} from '@lionrockjs/central';
 
-class Tag extends ORM{
+export default class Tag extends ORM{
   name;
 
   static joinTablePrefix = 'tag';
@@ -10,5 +10,3 @@ class Tag extends ORM{
     ['name', 'String']
   ]);
 }
-
-module.exports = Tag;
