@@ -1,15 +1,9 @@
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
-import { Central, ORM, ControllerMixinDatabase } from '@lionrockjs/central';
-import DatabaseAdapterBetterSqlite3 from '../../classes/adapter/database/BetterSQLite3.mjs';
+import Database from 'better-sqlite3';
+import { Central, ORM } from '@lionrockjs/central';
 import ORMAdapterSQLite from '../../classes/adapter/orm/SQLite.mjs';
-
-Central.init(`${__dirname}/test18`).then();
-
-ControllerMixinDatabase.defaultAdapter = DatabaseAdapterBetterSqlite3;
 ORM.defaultAdapter = ORMAdapterSQLite;
-
-const Database = require('better-sqlite3');
 
 class Product extends ORM {
   name = null;
@@ -88,6 +82,15 @@ class Collection extends ORM {
 }
 
 describe('orm test', () => {
+  beforeEach(async () => {
+    await Central.init({
+      EXE_PATH: `${__dirname}/test18`,
+    });
+  });
+
+  afterEach(async () => {
+  });
+
   const db = new Database(':memory:');
   db.exec(`CREATE TABLE products(
 id INTEGER UNIQUE DEFAULT ((( strftime('%s','now') - 1563741060 ) * 100000) + (RANDOM() & 65535)) NOT NULL ,
@@ -163,11 +166,11 @@ CREATE TABLE collection_products(
 `);
 
   beforeEach(() => {
-    KohanaJS.init(__dirname, `${__dirname}/orm/application`, `${__dirname}/test1/modules`);
-    KohanaJS.classPath.set('model/Product.js', Product);
-    KohanaJS.classPath.set('model/Variant.js', Variant);
-    KohanaJS.classPath.set('model/Inventory.js', Inventory);
-    KohanaJS.classPath.set('model/Collection.js', Collection);
+    Central.init(__dirname, `${__dirname}/orm/application`, `${__dirname}/test1/modules`);
+    Central.classPath.set('model/Product.js', Product);
+    Central.classPath.set('model/Variant.js', Variant);
+    Central.classPath.set('model/Inventory.js', Inventory);
+    Central.classPath.set('model/Collection.js', Collection);
 
     db.prepare('INSERT INTO products (id, name) VALUES (?, ?);').run(1, 'Foo');
     db.prepare('INSERT INTO products (id, name) VALUES (?, ?);').run(2, 'Tar');

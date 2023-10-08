@@ -28,14 +28,21 @@ import path from 'node:path';
 import fs from 'node:fs';
 import Database from 'better-sqlite3';
 
-Central.init({
-  EXE_PATH: `${__dirname}/test18`,
-}).then();
-
 ORM.defaultAdapter = SQLiteAdapter;
-const Person = ORM.require('Person');
+
 
 describe('orm test', () => {
+  let Person;
+  beforeEach(async () => {
+    await Central.init({
+      EXE_PATH: `${__dirname}/test18`,
+    });
+    Person = await ORM.import('Person');
+  });
+
+  afterEach(async () => {
+  });
+
   // idx is autoincrement primary key
   const targetPath = path.normalize(`${__dirname}/test18/db/empty.sqlite`);
   const sourcePath = path.normalize(`${__dirname}/orm/db/empty.default.sqlite`);
@@ -143,10 +150,10 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     const people = await ORM.readWith(Person, criteria, { database: db });
     expect(people.length).toBe(3);
 
-    const empty = await ORM.readWith(Person, [], { adapter: require('../../classes/ORMAdapter/SQLite') });
+    const empty = await ORM.readWith(Person, [], { adapter: SQLiteAdapter });
     expect(empty.length).toBe(0);
 
-    Person.defaultAdapter = require('../../classes/ORMAdapter/SQLite');
+    Person.defaultAdapter = SQLiteAdapter;
     const empty2 = await ORM.readWith(Person);
     expect(empty2.length).toBe(0);
 

@@ -1,7 +1,7 @@
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 
-import {Central, ORM} from '@lionrockjs/central';
+import {Central, ORM, CentralAdapterNode} from '@lionrockjs/central';
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import fs from "node:fs";
@@ -9,6 +9,7 @@ import ORMAdapterSQLite from "../../classes/adapter/orm/SQLite";
 
 const EQUAL = "EQUAL";
 ORM.defaultAdapter = ORMAdapterSQLite;
+Central.adapter = CentralAdapterNode;
 
 describe('orm test', () => {
   beforeEach(async () => {
@@ -23,9 +24,6 @@ describe('orm test', () => {
   });
 
   test('orm', async() => {
-    const KOJSORM = await Central.import('ORM');
-    expect(KOJSORM).toBe(ORM);
-
     const obj = new ORM();
     const className = obj.constructor.name;
 
@@ -35,7 +33,7 @@ describe('orm test', () => {
   });
 
   test('extends ORM', async () => {
-    const TestModel = await import('./orm/application/classes/TestModel').default;
+    const TestModel = (await import('./orm/application/classes/TestModel')).default;
     // eslint-disable-next-line no-new
     new TestModel();
 
@@ -76,7 +74,7 @@ describe('orm test', () => {
     db.prepare(`INSERT INTO ${tableName} (text) VALUES (?)`).run('Hello');
     db.prepare(`INSERT INTO ${tableName} (text) VALUES (?)`).run('Foo');
 
-    const TestModel = require('./orm/application/classes/TestModel');
+    const TestModel = (await import('./orm/application/classes/TestModel')).default;
     const m = await new TestModel(1).read();
     const m2 = await new TestModel(2).read();
 
@@ -103,7 +101,7 @@ describe('orm test', () => {
     db.prepare(`INSERT INTO ${tableName} (text) VALUES (?)`).run('Hello');
     db.prepare(`INSERT INTO ${tableName} (text) VALUES (?)`).run('Foo');
 
-    const TestModel = require('./orm/application/classes/TestModel');
+    const TestModel = await Central.import('TestModel');
 
     const m = await new TestModel(1, { database: db }).read();
     const m2 = await ORM.factory(TestModel, 2, { database: db });
@@ -131,7 +129,7 @@ describe('orm test', () => {
     db.prepare(`INSERT INTO ${tableName} (text) VALUES (?)`).run('Hello');
     db.prepare(`INSERT INTO ${tableName} (text) VALUES (?)`).run('Foo');
 
-    const AliasModel = require('./orm/application/classes/AliasModel');
+    const AliasModel = await Central.import('AliasModel');
 
     expect(AliasModel.tableName).toBe('testmodels');
 
@@ -153,8 +151,8 @@ describe('orm test', () => {
 
     ORM.database = db;
 
-    const Address = ORM.require('Address');
-    const Person = ORM.require('Person');
+    const Address = await ORM.import('Address');
+    const Person = await ORM.import('Person');
 
     const peter = await new Person(1).read();
     expect(peter.first_name).toBe('Peter');
@@ -198,8 +196,8 @@ describe('orm test', () => {
     db.prepare('INSERT INTO persons (first_name, last_name) VALUES (?, ?)').run('Peter', 'Pan');
     db.prepare('INSERT INTO addresses (person_id, address1) VALUES (?, ?)').run(1, 'Planet X');
 
-    const Address = ORM.require('Address');
-    const Person = ORM.require('Person');
+    const Address = await ORM.import('Address');
+    const Person = await ORM.import('Person');
 
     const peter = await ORM.factory(Person, 1, { database: db });
     expect(peter.first_name).toBe('Peter');
@@ -227,8 +225,8 @@ describe('orm test', () => {
 
     ORM.database = db;
 
-    const Product = ORM.require('Product');
-    const Tag = ORM.require('Tag');
+    const Product = await ORM.import('Product');
+    const Tag = await ORM.import('Tag');
 
     const product = await ORM.factory(Product, 1);
 
@@ -251,8 +249,8 @@ describe('orm test', () => {
     db.prepare('INSERT INTO product_tags (product_id, tag_id) VALUES (?,?)').run(1, 1);
     db.prepare('INSERT INTO product_tags (product_id, tag_id) VALUES (?,?)').run(1, 2);
 
-    const Product = ORM.require('Product');
-    const Tag = ORM.require('Tag');
+    const Product = await ORM.import('Product');
+    const Tag = await ORM.import('Tag');
 
     const product = await ORM.factory(Product, 1, { database: db });
 
@@ -277,7 +275,7 @@ describe('orm test', () => {
 
     ORM.database = db;
 
-    const Tag = ORM.require('Tag');
+    const Tag = await ORM.import('Tag');
     const tags = await ORM.readAll(Tag, { database: db });
 
     expect(tags[0].name).toBe('foo');
@@ -317,7 +315,7 @@ describe('orm test', () => {
     db.prepare('INSERT INTO tags (id, name) VALUES (?, ?)').run(1, 'foo');
     db.prepare('INSERT INTO tags (id, name) VALUES (?, ?)').run(2, 'tar');
 
-    const Tag = ORM.require('Tag');
+    const Tag = await ORM.import('Tag');
     const t = await ORM.factory(Tag, 1, { database: db });
 
     expect(t.name).toBe('foo');
@@ -331,7 +329,7 @@ describe('orm test', () => {
     db.prepare('INSERT INTO persons (first_name, last_name) VALUES (?, ?)').run('Peter', 'Pan');
     db.prepare('INSERT INTO addresses (person_id, address1) VALUES (?, ?)').run(1, 'Planet X');
 
-    const Person = ORM.require('Person');
+    const Person = await ORM.import('Person');
 
     const peter = await ORM.factory(Person, 1, { database: db });
     peter.last_name = 'Panther';
@@ -349,7 +347,7 @@ describe('orm test', () => {
     db.prepare('INSERT INTO persons (first_name, last_name) VALUES (?, ?)').run('Peter', 'Pan');
     db.prepare('INSERT INTO addresses (person_id, address1) VALUES (?, ?)').run(1, 'Planet X');
 
-    const Person = ORM.require('Person');
+    const Person = await ORM.import('Person');
     const alice = ORM.create(Person, { database: db });
     alice.first_name = 'Alice';
     alice.last_name = 'Lee';
@@ -374,8 +372,8 @@ describe('orm test', () => {
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
     const db = new Database(dbPath);
 
-    const Product = ORM.require('Product');
-    const Tag = ORM.require('Tag');
+    const Product = await ORM.import('Product');
+    const Tag = await ORM.import('Tag');
 
     const tagA = new Tag(null, { database: db });
     tagA.name = 'white';
@@ -406,8 +404,8 @@ describe('orm test', () => {
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
     const db = new Database(dbPath);
 
-    const Product = ORM.require('Product');
-    const Tag = ORM.require('Tag');
+    const Product = await ORM.import('Product');
+    const Tag = await ORM.import('Tag');
 
     const tagA = new Tag(null, { database: db });
     tagA.name = 'white';
@@ -434,8 +432,8 @@ describe('orm test', () => {
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
     const db = new Database(dbPath);
 
-    const Product = ORM.require('Product');
-    const Tag = ORM.require('Tag');
+    const Product = await ORM.import('Product');
+    const Tag = await ORM.import('Tag');
 
     const tagA = new Tag(null, { database: db });
     tagA.name = 'white';
@@ -462,7 +460,7 @@ describe('orm test', () => {
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
     const db = new Database(dbPath);
 
-    const Product = ORM.require('Product');
+    const Product = await ORM.import('Product');
     const product = new Product(null, { database: db });
     product.name = 'milk';
     product.write();
@@ -481,8 +479,8 @@ describe('orm test', () => {
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
     const db = new Database(dbPath);
 
-    const Product = ORM.require('Product');
-    const Tag = ORM.require('Tag');
+    const Product = await ORM.import('Product');
+    const Tag = await ORM.import('Tag');
 
     const tagA = new Tag(null, { database: db });
     tagA.name = 'white';
@@ -527,7 +525,7 @@ describe('orm test', () => {
     const db = new Database(dbPath);
     db.prepare('INSERT INTO products (name) VALUES (?)').run('bar');
 
-    const Product = ORM.require('Product');
+    const Product = await ORM.import('Product');
 
     const product = new Product(null, { database: db });
     try {
@@ -552,7 +550,7 @@ describe('orm test', () => {
     const db = new Database(dbPath);
     db.prepare('INSERT INTO products (name) VALUES (?)').run('bar');
 
-    const Product = ORM.require('Product');
+    const Product = await ORM.import('Product');
     const product = new Product(null, { database: db });
     try {
       await product.delete();
@@ -570,8 +568,8 @@ describe('orm test', () => {
     db.prepare('INSERT INTO persons (first_name, last_name) VALUES (?, ?)').run('Peter', 'Pan');
     db.prepare('INSERT INTO addresses (person_id, address1) VALUES (?, ?)').run(1, 'Planet X');
 
-    const Address = ORM.require('Address');
-    const Person = ORM.require('Person');
+    const Address = await ORM.import('Address');
+    const Person = await ORM.import('Person');
 
     const peter = await ORM.factory(Person, 1, { database: db });
     expect(peter.first_name).toBe('Peter');
@@ -600,7 +598,7 @@ describe('orm test', () => {
   test('no database', async () => {
     ORM.database = null;
 
-    const Person = ORM.require('Person');
+    const Person = await ORM.import('Person');
     const peter = new Person({database: null});
 
     try {
@@ -619,7 +617,7 @@ describe('orm test', () => {
     const db = new Database(dbPath);
     db.prepare('INSERT INTO persons (first_name, last_name) VALUES (?, ?)').run('Peter', 'Pan');
 
-    const Person = ORM.require('Person');
+    const Person = await ORM.import('Person');
     const a = new Person('1000', { database: db });
 
     try {
@@ -633,7 +631,7 @@ describe('orm test', () => {
   });
 
   test('ORM convert boolean to TRUE and FALSE when save', async () => {
-    KohanaJS.init({ EXE_PATH: `${__dirname}/test13` });
+    await Central.init({ EXE_PATH: `${__dirname}/test13` });
 
     // idx is autoincrement primary key
     const targetPath = path.normalize(`${__dirname}/test13/db/empty.sqlite`);
@@ -655,7 +653,7 @@ UPDATE persons SET updated_at = CURRENT_TIMESTAMP WHERE id = old.id;
 END;
 `);
 
-    const Person = ORM.require('Person');
+    const Person = await ORM.import('Person');
     const p = ORM.create(Person, { database: db });
     p.enable = true;
     await p.write();
@@ -673,7 +671,7 @@ END;
   });
 
   test('ORM find', async () => {
-    KohanaJS.init({ EXE_PATH: `${__dirname}/test15` });
+    await Central.init({ EXE_PATH: `${__dirname}/test15` });
 
     // idx is autoincrement primary key
     const targetPath = path.normalize(`${__dirname}/test15/db/empty.sqlite`);
@@ -697,7 +695,7 @@ UPDATE persons SET updated_at = CURRENT_TIMESTAMP WHERE id = old.id;
 END;
 `);
 
-    const Person = ORM.require('Person');
+    const Person = await ORM.import('Person');
     const p = ORM.create(Person, { database: db });
     p.name = 'Alice';
     p.email = 'alice@example.com';
@@ -726,31 +724,31 @@ END;
   });
 
   test('prepend model prefix path', async () => {
-    KohanaJS.init({ EXE_PATH: `${__dirname}/test15` });
-    const Person = ORM.require('Person');
+    await Central.init({ EXE_PATH: `${__dirname}/test15` });
+    const Person = await ORM.import('Person');
     const p = new Person();
     expect(!!p).toBe(true);
 
     try {
       ORM.classPrefix = 'models/';
-      ORM.require('Person');
+      await ORM.import('Person');
       expect('this line should not be run').expect(true);
     } catch (e) {
       ORM.classPrefix = 'model/';
-      expect(e.message).toBe('KohanaJS resolve path error: path models/Person.js not found. classes , {} ');
+      expect(e.message).toBe('KohanaJS resolve path error: path models/Person.mjs not found. prefixPath: classes , store: {} ');
     }
   });
 
-  test('ORM require', async () => {
-    KohanaJS.init({ EXE_PATH: `${__dirname}/test15` });
-    const Person = ORM.require('Person');
+  test('ORM import', async () => {
+    await Central.init({ EXE_PATH: `${__dirname}/test15` });
+    const Person = await ORM.import('Person');
     const p = new Person();
     expect(!!p).toBe(true);
   });
 
   test('ORM snapshot', async () => {
-    KohanaJS.init({ EXE_PATH: `${__dirname}/test15` });
-    const Person = ORM.require('Person');
+    await Central.init({ EXE_PATH: `${__dirname}/test15` });
+    const Person = await ORM.import('Person');
     const p = new Person();
     p.name = 'Alice';
 
@@ -771,7 +769,7 @@ END;
 
     database.prepare('INSERT INTO tags (name) VALUES (?),(?),(?),(?),(?)').run('foo', 'tar', 'sha', 'lar','foo');
 
-    const Tag = ORM.require('Tag');
+    const Tag = await ORM.import('Tag');
     const count = await ORM.count(Tag, { database });
     expect(count).toBe(5);
 

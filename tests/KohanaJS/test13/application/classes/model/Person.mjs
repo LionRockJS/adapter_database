@@ -5,8 +5,6 @@ export default class Person extends ORM{
     super(id, options);
 
     this.enable = null;
-    this.name = null;
-    this.email = null;
   }
 }
 
@@ -15,8 +13,6 @@ Person.tableName = 'persons';
 
 Person.fields = new Map([
   ['enable','Boolean'],
-  ['name','String'],
-  ['email','String'],
 ]);
 
 Person.belongsTo = new Map([
