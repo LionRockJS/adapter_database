@@ -96,7 +96,7 @@ describe('orm test', () => {
 id INTEGER UNIQUE DEFAULT ((( strftime('%s','now') - 1563741060 ) * 100000) + (RANDOM() & 65535)) NOT NULL ,
 created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL ,
 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL ,
-name TEXT); 
+name TEXT);
 
 CREATE TRIGGER products AFTER UPDATE ON products WHEN old.updated_at < CURRENT_TIMESTAMP BEGIN
 UPDATE products SET updated_at = CURRENT_TIMESTAMP WHERE id = old.id;
@@ -167,10 +167,10 @@ CREATE TABLE collection_products(
 
   beforeEach(() => {
     Central.init(__dirname, `${__dirname}/orm/application`, `${__dirname}/test1/modules`);
-    Central.classPath.set('model/Product.js', Product);
-    Central.classPath.set('model/Variant.js', Variant);
-    Central.classPath.set('model/Inventory.js', Inventory);
-    Central.classPath.set('model/Collection.js', Collection);
+    Central.classPath.set('model/Product.mjs', Product);
+    Central.classPath.set('model/Variant.mjs', Variant);
+    Central.classPath.set('model/Inventory.mjs', Inventory);
+    Central.classPath.set('model/Collection.mjs', Collection);
 
     db.prepare('INSERT INTO products (id, name) VALUES (?, ?);').run(1, 'Foo');
     db.prepare('INSERT INTO products (id, name) VALUES (?, ?);').run(2, 'Tar');
