@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LionRockJS/adapter_database.git"
+    "url": "git+https://github.com/LionRockJS/adapter-database.git"
   },
   "keywords": [
     "LionRock",
@@ -34,9 +34,9 @@
   "author": "Kojin Nakana",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/LionRockJS/adapter_database/issues"
+    "url": "https://github.com/LionRockJS/adapter-database/issues"
   },
-  "homepage": "https://github.com/LionRockJS/adapter_database#readme",
+  "homepage": "https://github.com/LionRockJS/adapter-database#readme",
   "dependencies": {
     "better-sqlite3": "^8.2.0"
   }
