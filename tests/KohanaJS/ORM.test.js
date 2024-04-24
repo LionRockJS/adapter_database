@@ -735,7 +735,7 @@ END;
       expect('this line should not be run').expect(true);
     } catch (e) {
       ORM.classPrefix = 'model/';
-      expect(e.message).toBe('KohanaJS resolve path error: path models/Person.mjs not found. prefixPath: classes , store: {} ');
+      expect(e.message).toBe('Resolve path error: path models/Person.mjs not found. prefixPath: classes , store: {} ');
     }
   });
 
