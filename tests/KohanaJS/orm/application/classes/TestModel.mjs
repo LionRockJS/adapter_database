@@ -1,5 +1,5 @@
-import {ORM} from '@lionrockjs/central';
+import { Model } from '@lionrockjs/central';
 
-export default class TestModel extends ORM{
+export default class TestModel extends Model{
   static tableName = "testmodels";
 }

@@ -1,11 +1,11 @@
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 import Database from 'better-sqlite3';
-import { Central, ORM } from '@lionrockjs/central';
+import { Central, ORM, Model } from '@lionrockjs/central';
 import ORMAdapterSQLite from '../../classes/adapter/orm/SQLite.mjs';
-ORM.defaultAdapter = ORMAdapterSQLite;
+Model.defaultAdapter = ORMAdapterSQLite;
 
-class Product extends ORM {
+class Product extends Model {
   name = null;
 
   static joinTablePrefix = 'product';
@@ -25,7 +25,7 @@ class Product extends ORM {
   ]);
 }
 
-class Variant extends ORM {
+class Variant extends Model {
   product_id = null;
 
   price = 0;
@@ -47,7 +47,7 @@ class Variant extends ORM {
   ];
 }
 
-class Inventory extends ORM {
+class Inventory extends Model {
   variant_id = null;
 
   quantity = 0;
@@ -65,7 +65,7 @@ class Inventory extends ORM {
   ]);
 }
 
-class Collection extends ORM {
+class Collection extends Model {
   name = null;
 
   static joinTablePrefix = 'collection';
@@ -166,7 +166,10 @@ CREATE TABLE collection_products(
 `);
 
   beforeEach(() => {
-    Central.init(__dirname, `${__dirname}/orm/application`, `${__dirname}/test1/modules`);
+    Central.init({
+      EXE_PATH: `${__dirname}`,
+      APP_PATH : `${__dirname}/orm/application`,
+    })
     Central.classPath.set('model/Product.mjs', Product);
     Central.classPath.set('model/Variant.mjs', Variant);
     Central.classPath.set('model/Inventory.mjs', Inventory);
@@ -247,7 +250,7 @@ CREATE TABLE collection_products(
   });
 
   test('count', async () => {
-    const variants = await ORM.count(Variant, { database: db });
+    const variants = await ORM.countAll(Variant, { database: db });
     expect(variants).toBe(7);
   });
 });

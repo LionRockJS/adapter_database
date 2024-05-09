@@ -22,13 +22,13 @@ const {
   END_GROUP: 'END_GROUP',
 };
 
-import { Central, ORM } from '@lionrockjs/central';
-import SQLiteAdapter from '../../classes/adapter/orm/SQLite.mjs';
+import { Central, Model, ORM } from '@lionrockjs/central';
+import ORMAdapterSQLite from '../../classes/adapter/orm/SQLite.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
 import Database from 'better-sqlite3';
 
-ORM.defaultAdapter = SQLiteAdapter;
+Model.defaultAdapter = ORMAdapterSQLite;
 
 
 describe('orm test', () => {
@@ -61,7 +61,7 @@ email TEXT);
 CREATE TRIGGER persons_updated_at AFTER UPDATE ON persons WHEN old.updated_at < CURRENT_TIMESTAMP BEGIN
 UPDATE persons SET updated_at = CURRENT_TIMESTAMP WHERE id = old.id;
 END;`);
-  ORM.database = db;
+  Model.database = db;
 
   beforeEach(() => {
     db.exec(`
@@ -143,17 +143,17 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
       [END_GROUP],
     ];
 
-    const strCriteria = SQLiteAdapter.formatCriteria(criteria);
+    const strCriteria = ORMAdapterSQLite.formatCriteria(criteria);
     expect(strCriteria).toBe(" enable = ? AND    (     name = ? OR name = ? OR name = ? OR name = 'Dennis' OR name = 'Eric' )    ");
 
 
     const people = await ORM.readWith(Person, criteria, { database: db });
     expect(people.length).toBe(3);
 
-    const empty = await ORM.readWith(Person, [], { adapter: SQLiteAdapter });
+    const empty = await ORM.readWith(Person, [], { adapter: ORMAdapterSQLite });
     expect(empty.length).toBe(0);
 
-    Person.defaultAdapter = SQLiteAdapter;
+    Person.defaultAdapter = ORMAdapterSQLite;
     const empty2 = await ORM.readWith(Person);
     expect(empty2.length).toBe(0);
 
@@ -363,16 +363,16 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
 
 
   test('coverage', ()=>{
-    expect(SQLiteAdapter.op(SQLiteAdapter.OP.AND)).toBe('AND');
-    expect(SQLiteAdapter.op(null)).toBe(null);
-    expect(SQLiteAdapter.op('Something')).toBe("'Something'");
+    expect(ORMAdapterSQLite.op(ORMAdapterSQLite.OP.AND)).toBe('AND');
+    expect(ORMAdapterSQLite.op(null)).toBe(null);
+    expect(ORMAdapterSQLite.op('Something')).toBe("'Something'");
 
-    expect(SQLiteAdapter.translateValues().length).toBe(0);
-    expect(SQLiteAdapter.translateValues([]).length).toBe(0);
-    expect(SQLiteAdapter.translateValues([{foo:'bar'}])[0]).toBe("{\"foo\":\"bar\"}");
-    expect(SQLiteAdapter.translateValues([()=>'hello'])[0]).toBe("\"hello\"");
+    expect(ORMAdapterSQLite.translateValues().length).toBe(0);
+    expect(ORMAdapterSQLite.translateValues([]).length).toBe(0);
+    expect(ORMAdapterSQLite.translateValues([{foo:'bar'}])[0]).toBe("{\"foo\":\"bar\"}");
+    expect(ORMAdapterSQLite.translateValues([()=>'hello'])[0]).toBe("\"hello\"");
 
-    expect(SQLiteAdapter.getWheresAndWhereValueFromCriteria().wheres).toBe("    ");
-    expect(SQLiteAdapter.getWheresAndWhereValueFromCriteria([[]]).wheres).toBe("    ");
+    expect(ORMAdapterSQLite.getWheresAndWhereValueFromCriteria().wheres).toBe("    ");
+    expect(ORMAdapterSQLite.getWheresAndWhereValueFromCriteria([[]]).wheres).toBe("    ");
   })
 });

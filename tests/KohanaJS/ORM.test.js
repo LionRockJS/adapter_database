@@ -1,14 +1,14 @@
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 
-import {Central, ORM, CentralAdapterNode} from '@lionrockjs/central';
+import {Central, ORM, Model, CentralAdapterNode} from '@lionrockjs/central';
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import fs from "node:fs";
 import ORMAdapterSQLite from "../../classes/adapter/orm/SQLite";
 
 const EQUAL = "EQUAL";
-ORM.defaultAdapter = ORMAdapterSQLite;
+Model.defaultAdapter = ORMAdapterSQLite;
 Central.adapter = CentralAdapterNode;
 
 describe('orm test', () => {
@@ -24,11 +24,11 @@ describe('orm test', () => {
   });
 
   test('orm', async() => {
-    const obj = new ORM();
+    const obj = new Model();
     const className = obj.constructor.name;
 
-    expect(className).toBe('ORM');
-    expect(ORM.tableName).toBe(null);
+    expect(className).toBe('Model');
+    expect(Model.tableName).toBe(null);
     // ORM is abstract class, should not found lowercase and tableName
   });
 
@@ -60,7 +60,7 @@ describe('orm test', () => {
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     const db = new Database(dbPath);
 
-    ORM.database = db;
+    Model.database = db;
 
     const tableName = 'testmodels';
     db.prepare(
@@ -74,9 +74,12 @@ describe('orm test', () => {
     db.prepare(`INSERT INTO ${tableName} (text) VALUES (?)`).run('Hello');
     db.prepare(`INSERT INTO ${tableName} (text) VALUES (?)`).run('Foo');
 
-    const TestModel = (await import('./orm/application/classes/TestModel')).default;
-    const m = await new TestModel(1).read();
-    const m2 = await new TestModel(2).read();
+    const TestModel = (await import('./orm/application/classes/TestModel.mjs')).default;
+
+    const m = new TestModel(1);
+    await m.read();
+    const m2 = new TestModel(2);
+    await m2.read();
 
     expect(TestModel.tableName).toBe('testmodels');
 
@@ -103,7 +106,9 @@ describe('orm test', () => {
 
     const TestModel = await Central.import('TestModel');
 
-    const m = await new TestModel(1, { database: db }).read();
+    const m = new TestModel(1, { database: db });
+    await m.read();
+
     const m2 = await ORM.factory(TestModel, 2, { database: db });
 
     expect(TestModel.tableName).toBe('testmodels');
@@ -149,15 +154,17 @@ describe('orm test', () => {
     db.prepare('INSERT INTO persons (id, first_name, last_name) VALUES (?, ?, ?)').run(1, 'Peter', 'Pan');
     db.prepare('INSERT INTO addresses (person_id, address1) VALUES (?, ?)').run(1, 'Planet X');
 
-    ORM.database = db;
+    Model.database = db;
 
     const Address = await ORM.import('Address');
     const Person = await ORM.import('Person');
 
-    const peter = await new Person(1).read();
+    const peter = new Person(1);
+    await peter.read();
     expect(peter.first_name).toBe('Peter');
 
-    const home = await new Address(1).read();
+    const home = new Address(1);
+    await home.read();
     expect(home.address1).toBe('Planet X');
 
     const owner = await home.parent('person_id');
@@ -223,7 +230,7 @@ describe('orm test', () => {
     db.prepare('INSERT INTO product_tags (product_id, tag_id) VALUES (?,?)').run(1, 1);
     db.prepare('INSERT INTO product_tags (product_id, tag_id) VALUES (?,?)').run(1, 2);
 
-    ORM.database = db;
+    Model.database = db;
 
     const Product = await ORM.import('Product');
     const Tag = await ORM.import('Tag');
@@ -273,7 +280,7 @@ describe('orm test', () => {
     db.prepare('INSERT INTO tags (name) VALUES (?)').run('foo');
     db.prepare('INSERT INTO tags (name) VALUES (?)').run('tar');
 
-    ORM.database = db;
+    Model.database = db;
 
     const Tag = await ORM.import('Tag');
     const tags = await ORM.readAll(Tag, { database: db });
@@ -356,7 +363,7 @@ describe('orm test', () => {
     const data = db.prepare('SELECT * FROM persons WHERE first_name = ?').get('Alice');
     expect(data.last_name).toBe('Lee');
 
-    ORM.database = db;
+    Model.database = db;
     const bob = ORM.create(Person);
     bob.first_name = 'Bob';
     bob.last_name = 'Chan';
@@ -596,7 +603,7 @@ describe('orm test', () => {
   });
 
   test('no database', async () => {
-    ORM.database = null;
+    Model.database = null;
 
     const Person = await ORM.import('Person');
     const peter = new Person({database: null});
@@ -770,10 +777,10 @@ END;
     database.prepare('INSERT INTO tags (name) VALUES (?),(?),(?),(?),(?)').run('foo', 'tar', 'sha', 'lar','foo');
 
     const Tag = await ORM.import('Tag');
-    const count = await ORM.count(Tag, { database });
+    const count = await ORM.countAll(Tag, { database });
     expect(count).toBe(5);
 
-    const count2 = await ORM.count(Tag, { database, kv:new Map([['name', 'foo']]) });
+    const count2 = await ORM.countAll(Tag, { database, kv:new Map([['name', 'foo']]) });
     expect(count2).toBe(2);
 
     const count2b = await ORM.countBy(Tag, 'name', ['foo'],{ database });

@@ -1,8 +1,27 @@
 import { ORMAdapter } from '@lionrockjs/central';
 
 export default class ORMAdapterSQLite extends ORMAdapter {
-  static OP = ({
-    ...ORMAdapter.OP,
+  static OP = Object.assign(
+    { EQUAL: '=',
+      GREATER_THAN: '>',
+      LESS_THAN: '<',
+      GREATER_THAN_EQUAL: '>=',
+      LESS_THAN_EQUAL: '<=',
+      NOT_EQUAL: '<>',
+      BETWEEN: 'BETWEEN',
+      LIKE: 'LIKE',
+      IN: 'IN',
+      AND: 'AND',
+      OR: 'OR',
+      TRUE: 'TRUE',
+      FALSE: 'FALSE',
+      BLANK: "''",
+      START_GROUP: '(',
+      END_GROUP: ')',
+      NULL: 'NULL',
+      IS_NULL: 'IS NULL'
+    },
+    {
     NOT_EQUAL: '!=',
     TRUE: 1,
     FALSE: 0,
@@ -160,7 +179,7 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     return this.readResult(limit, `SELECT * FROM ${this.tableName} WHERE ${wheres} ${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`, whereValues);
   }
 
-  async count(kv = null) {
+  async countAll(kv = null) {
     const where = kv ? ` WHERE ${Array.from(kv.keys()).map(k => k + ' = ?').join(' AND ')}` : '';
     const v = kv ? Array.from(kv.values()) : [];
     const result = await this.constructor.getRow(this.database, `SELECT COUNT(id) FROM ${this.tableName}${where}`, v);
