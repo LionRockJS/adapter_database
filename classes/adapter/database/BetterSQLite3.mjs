@@ -5,8 +5,12 @@ import Database from 'better-sqlite3';
 export default class DatabaseAdapterBetterSqlite3 extends DatabaseAdapter {
   constructor(datasource) {
     super(datasource);
-    this.datasource = path.normalize(datasource);
-    this.database = new Database(datasource);
+    try{
+      this.datasource = path.normalize(datasource);
+      this.database = new Database(datasource);
+    }catch(e){
+      console.trace('Database connection error:' + datasource);
+    }
   }
 
   prepare(sql) {
