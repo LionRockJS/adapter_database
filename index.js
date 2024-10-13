@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-import url from "node:url";
-const dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
-export default {dirname}
+export default {
+  filename: import.meta.url,
+}
+
 
 import DatabaseAdapterBetterSQLite3 from './classes/adapter/database/BetterSQLite3.mjs';
 import ORMAdapterSQLite from './classes/adapter/orm/SQLite.mjs';
