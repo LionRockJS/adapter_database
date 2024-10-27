@@ -77,9 +77,9 @@ describe('orm test', () => {
     const TestModel = (await import('./orm/application/classes/TestModel.mjs')).default;
 
     const m = new TestModel(1);
-    await m.read();
+    await m.read(['id', 'text']);
     const m2 = new TestModel(2);
-    await m2.read();
+    await m2.read(['id', 'text']);
 
     expect(TestModel.tableName).toBe('testmodels');
 
@@ -107,9 +107,9 @@ describe('orm test', () => {
     const TestModel = await Central.import('TestModel');
 
     const m = new TestModel(1, { database: db });
-    await m.read();
+    await m.read(['text']);
 
-    const m2 = await ORM.factory(TestModel, 2, { database: db });
+    const m2 = await ORM.factory(TestModel, 2, { database: db, columns: ['text'] });
 
     expect(TestModel.tableName).toBe('testmodels');
 
@@ -142,7 +142,7 @@ describe('orm test', () => {
     new AliasModel();
     expect(AliasModel.joinTablePrefix).toBe('testmodel');
 
-    const model = await ORM.factory(AliasModel, 1, { database: db });
+    const model = await ORM.factory(AliasModel, 1, { database: db, columns: ['text'] });
     expect(model.text).toBe('Hello');
   });
 
@@ -160,14 +160,14 @@ describe('orm test', () => {
     const Person = await ORM.import('Person');
 
     const peter = new Person(1);
-    await peter.read();
+    await peter.read(['first_name']);
     expect(peter.first_name).toBe('Peter');
 
     const home = new Address(1);
-    await home.read();
+    await home.read(['address1', 'person_id']);
     expect(home.address1).toBe('Planet X');
 
-    const owner = await home.parent('person_id');
+    const owner = await home.parent('person_id', { columns: ['first_name'] });
     expect(owner.first_name).toBe('Peter');
 
     try {
@@ -206,13 +206,13 @@ describe('orm test', () => {
     const Address = await ORM.import('Address');
     const Person = await ORM.import('Person');
 
-    const peter = await ORM.factory(Person, 1, { database: db });
+    const peter = await ORM.factory(Person, 1, { database: db , columns: ['first_name'] });
     expect(peter.first_name).toBe('Peter');
 
-    const home = await ORM.factory(Address, 1, { database: db });
+    const home = await ORM.factory(Address, 1, { database: db, columns: ['address1', 'person_id'] });
     expect(home.address1).toBe('Planet X');
 
-    const owner = await home.parent('person_id');
+    const owner = await home.parent('person_id', { columns: ['first_name'] });
     expect(owner.first_name).toBe('Peter');
 
     expect(owner.db).toStrictEqual(home.db);
@@ -338,7 +338,7 @@ describe('orm test', () => {
 
     const Person = await ORM.import('Person');
 
-    const peter = await ORM.factory(Person, 1, { database: db });
+    const peter = await ORM.factory(Person, 1, { database: db, columns: ['first_name'] });
     peter.last_name = 'Panther';
     peter.write();
 
@@ -578,13 +578,13 @@ describe('orm test', () => {
     const Address = await ORM.import('Address');
     const Person = await ORM.import('Person');
 
-    const peter = await ORM.factory(Person, 1, { database: db });
+    const peter = await ORM.factory(Person, 1, { database: db, columns: ['first_name'] });
     expect(peter.first_name).toBe('Peter');
 
-    const home = await ORM.factory(Address, 1, { database: db });
+    const home = await ORM.factory(Address, 1, { database: db, columns: ['address1', 'person_id'] });
     expect(home.address1).toBe('Planet X');
 
-    const owner = await home.parent('person_id');
+    const owner = await home.parent('person_id', { columns: ['first_name'] });
     expect(owner.first_name).toBe('Peter');
 
     const office = new Address(null, { database: db });
@@ -628,7 +628,7 @@ describe('orm test', () => {
     const a = new Person('1000', { database: db });
 
     try {
-      await a.read();
+      await a.read(['id']);
       expect('this line should not be loaded').toBe(false);
     } catch (e) {
       expect(e.message).toBe('Record not found. Person id:1000');
@@ -665,15 +665,15 @@ END;
     p.enable = true;
     await p.write();
 
-    const r = await ORM.factory(Person, p.id, { database: db });
+    const r = await ORM.factory(Person, p.id, { database: db, columns: ['enable'] });
 
     expect(!!r.enable).toBe(true);
 
-    const p2 = ORM.create(Person, { database: db });
+    const p2 = ORM.create(Person, { database: db, columns : ['enable'] });
     p2.enable = false;
     await p2.write();
 
-    const r2 = await ORM.factory(Person, p.id, { database: db });
+    const r2 = await ORM.factory(Person, p.id, { database: db, columns: ['enable'] });
     expect(!!r2.enable).toBe(true);
   });
 

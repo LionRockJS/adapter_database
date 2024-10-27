@@ -201,7 +201,7 @@ CREATE TABLE collection_products(
   });
 
   test('orm setup', async () => {
-    const p = await ORM.factory(Product, 1, { database: db });
+    const p = await ORM.factory(Product, 1, { database: db});
     expect(p.name).toBe('Foo');
   });
 
@@ -241,10 +241,12 @@ CREATE TABLE collection_products(
   });
 
   test('parent', async () => {
-    const variant = await ORM.factory(Variant, 1, { database: db });
+    const variant = await ORM.factory(Variant, 1, { database: db, columns:['id', 'product_id','price'] });
+    expect(variant.price).toBe(100);
     await variant.eagerLoad({
       with: ['Product'],
-      product: { with: null },
+      product: { with: null},
+      columns: ['id', 'name'],
     });
     expect(variant.product.name).toBe('Foo');
   });

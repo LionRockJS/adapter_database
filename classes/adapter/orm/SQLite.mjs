@@ -102,8 +102,10 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     return database.prepare(sql).run(...this.translateValues(values));
   }
 
-  async read() {
-    return this.constructor.getRow(this.database, `SELECT * from ${this.tableName} WHERE id = ?`, [this.client.id]);
+  async read(columns = ['id','name']) {
+    const sql = `SELECT ${columns.join(', ')} FROM ${this.tableName} WHERE id = ?`;
+
+    return this.constructor.getRow(this.database, sql, [this.client.id]);
   }
 
   async update(values) {
@@ -146,37 +148,53 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     return this.constructor.run(this.database, `DELETE FROM ${jointTableName} WHERE ${lk} = ?`, [this.client.id]);
   }
 
-  async readResult(limit, sql, values) {
+  async readResult(limit, columns, where, values) {
+    const sqlSelect = `SELECT ${columns.join(', ')} FROM ${this.tableName} `;
+    const sql = sqlSelect + where;
+
     if(limit === 1){
-      const result = await this.constructor.getRow(this.database, sql, values);
+      const result = await this.constructor.getRow(this.database, sql, [...values]);
       return result ? [result] : [];
     }
-    return this.constructor.getRows(this.database, sql, values);
+    return this.constructor.getRows(this.database, sql,[...values]);
   }
 
-  async readAll(kv, limit = 1000, offset = 0, orderBy = new Map([['id', 'ASC']])) {
+  async readAll(kv, columns=['id', 'name'], limit = 1000, offset = 0, orderBy = new Map([['id', 'ASC']])) {
     const statementOrderBy = this.constructor.getOrderByStatement(orderBy);
 
     return kv ?
-      this.readResult(limit,
-        `SELECT * FROM ${this.tableName} WHERE ${Array.from(kv.keys()).map(k => k + ' = ?').join(' AND ')}${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
-        Array.from(kv.values())) :
-      this.readResult(limit,
-        `SELECT * FROM ${this.tableName} ${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
-        []);
+      this.readResult(
+        limit,
+        columns,
+        `WHERE ${Array.from(kv.keys()).map(k => k + ' = ?').join(' AND ')}${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
+        Array.from(kv.values())
+      ) :
+      this.readResult(
+        limit,
+        columns,
+        `${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
+        []
+      );
   }
 
-  async readBy(key, values, limit = 1000, offset = 0, orderBy = new Map([['id', 'ASC']])) {
+  async readBy(key, values, columns=['id', 'name'],  limit = 1000, offset = 0, orderBy = new Map([['id', 'ASC']])) {
     const statementOrderBy = this.constructor.getOrderByStatement(orderBy);
     return this.readResult(limit,
-      `SELECT * FROM ${this.tableName} WHERE ${key} IN (${values.map(() => '?').join(', ')})${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
-      values);
+      columns,
+      `WHERE ${key} IN (${values.map(() => '?').join(', ')})${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
+      values
+    );
   }
 
-  async readWith(criteria, limit = 1000, offset = 0, orderBy = new Map([['id', 'ASC']])) {
+  async readWith(criteria, columns=['id', 'name'], limit = 1000, offset = 0, orderBy = new Map([['id', 'ASC']])) {
     const statementOrderBy = this.constructor.getOrderByStatement(orderBy);
     const { wheres, whereValues } = this.constructor.getWheresAndWhereValueFromCriteria(criteria);
-    return this.readResult(limit, `SELECT * FROM ${this.tableName} WHERE ${wheres} ${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`, whereValues);
+    return this.readResult(
+      limit,
+      columns,
+      `WHERE ${wheres} ${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
+      whereValues
+    );
   }
 
   async countAll(kv = null) {

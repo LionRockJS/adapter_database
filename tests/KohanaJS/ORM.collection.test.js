@@ -79,7 +79,8 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
   });
 
   test('read all', async () => {
-    const result = await ORM.readAll(Person, { database: db });
+    const result = await ORM.readAll(Person, { database: db, columns:['*'] });
+
     expect(result.length).toBe(6);
 
     const r2 = await ORM.readAll(Person, { kv: new Map([['enable', false]]) });
@@ -120,7 +121,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
 
     const px = ORM.create(Person);
     px.name = 'Eric';
-    await px.read();
+    await px.read(['email']);
     expect(px.email).toBe('eric@example.com');
 
     const people = await ORM.readBy(Person, 'name', ['Alice', 'Bob', 'Eric', 'Frank'], { database: db });
@@ -157,7 +158,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     const empty2 = await ORM.readWith(Person);
     expect(empty2.length).toBe(0);
 
-    const dennis = await ORM.readWith(Person, [['', 'id', EQUAL, 4]]);
+    const dennis = await ORM.readWith(Person, [['', 'id', EQUAL, 4]], {columns: ["email"]});
     expect(dennis.email).toBe('dennis@example.com');
 
     try {
