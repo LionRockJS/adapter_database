@@ -7,7 +7,7 @@ export default class DatabaseAdapterBetterSqlite3 extends DatabaseAdapter {
     super(datasource);
     try{
       this.datasource = path.normalize(datasource);
-      this.database = new Database(datasource);
+      this.database = new Database(datasource, {fileMustExist: true}); // not create file if not exist
     }catch(e){
       console.trace('Database connection error:' + datasource);
     }
